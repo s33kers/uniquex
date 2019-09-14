@@ -2,19 +2,15 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Sorting students</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 </head>
 <body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
-<nav class="navbar navbar-inverse">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" th:href="@{/}">Sorting students</a>
-        </div>
-    </div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" th:href="@{/}">Sorting students</a>
 </nav>
 
 <div class="container-fluid text-center">
@@ -22,20 +18,68 @@
         <div class="col-sm-2 sidenav"></div>
         <div class="col-sm-8 text-left">
             <h1>input</h1>
-            <form method="post" action="/sort" enctype="multipart/form-data">
-                <select class="form-control" name="type">
-                    <option th:each="type : ${T(us.martink.uniquex.api.dto.SortType).values()}"
-                            th:value="${type}"
-                            th:text="${type}">
-                    </option>
-                </select>
-                <input type="file" name="studentsFile"/>
-                <input type="submit"/>
+            <form method="POST" enctype="multipart/form-data" id="fileUploadForm">
+                <div class="form-group">
+                    <label for="sortType">Sort type</label>
+                    <select  id="sortType" class="form-control" name="type">
+                        <option th:each="type : ${T(us.martink.uniquex.api.dto.SortType).values()}"
+                                th:value="${type}"
+                                th:text="${type}">
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="studentsFile">Students payload</label>
+                    <input type="file" class="form-control-file" id="studentsFile" name="studentsFile">
+                </div>
+                <input type="submit" class="btn btn-primary" id="btnSubmit"/>
             </form>
+
+            <div id="resultTable" style="padding-top: 50px"/>
         </div>
         <div class="col-sm-2 sidenav"></div>
     </div>
 </div>
 
+
+<script type="text/javascript">
+    $(document).ready( function () {
+        $("#btnSubmit").click( function (event) {
+            event.preventDefault();
+            var form = $('#fileUploadForm')[0];
+            var data = new FormData(form);
+            $.ajax({
+                type: "POST",
+                enctype: 'multipart/form-data',
+                url: "/sort",
+                data: data,
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (data) {
+
+                    console.log("SUCCESS : ", data);
+                    $("#btnSubmit").prop("disabled", false);
+
+                    var trHTML = '<h1>results</h1><table class="table">';
+                    $.each(data, function (i, item) {
+                        trHTML += '<tr><td>' + item.name + '</td><td>' + item.mark + '</td></tr>';
+                    });
+                    trHTML += '</table>';
+
+                    $('#resultTable').html(trHTML);
+
+                },
+                error: function (e) {
+
+                    $("#resultTable").text(e.responseText);
+                    console.log("ERROR : ", e);
+                    $("#btnSubmit").prop("disabled", false);
+
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>
