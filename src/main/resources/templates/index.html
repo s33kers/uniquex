@@ -43,6 +43,8 @@
 
 
 <script type="text/javascript">
+    var ajaxResult=[];
+
     $(document).ready( function () {
         $("#btnSubmit").click( function (event) {
             event.preventDefault();
@@ -59,6 +61,7 @@
                 success: function (data) {
 
                     console.log("SUCCESS : ", data);
+                    ajaxResult.push(data);
                     $("#btnSubmit").prop("disabled", false);
 
                     var trHTML = '<h1>results</h1><table class="table">';
@@ -67,6 +70,7 @@
                     });
                     trHTML += '</table>';
 
+                    trHTML += "<button id=\"fileDownloadSubmit\">Download!</button>"
                     $('#resultTable').html(trHTML);
 
                 },
@@ -76,6 +80,21 @@
                     console.log("ERROR : ", e);
                     $("#btnSubmit").prop("disabled", false);
 
+                }
+            });
+        });
+
+        //TODO need investigation how to implement
+        $("#fileDownloadSubmit").click( function () {
+            $.ajax({
+                type: "POST",
+                url: "/sort/file",
+                data: ajaxResult,
+                success: function (data) {
+                    console.log("SUCCESS : ", data);
+                },
+                error: function (e) {
+                    console.log("ERROR : ", e);
                 }
             });
         });
